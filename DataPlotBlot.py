@@ -28,9 +28,6 @@ auth = tweepy.OAuthHandler(cfg.plotbot_consumer_key, cfg.plotbot_consumer_secret
 auth.set_access_token(cfg.plotbot_access_token, cfg.plotbot_access_token_secret)
 api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 
-# If you wish to use this script for your bot, then you may change this to specify your twitter screen name
-BOT_STR = "@DataPlotBot Analyze:"    
-
 # The recent most tweet id that was analyzed is stored here to prevent any further analysis for
 # tweets occuring before this one
 recent_analyzed_id = ""
@@ -171,7 +168,7 @@ while True :
     print("starting our search after the last analyzed id: " + recent_analyzed_id)
     
     # Search Twitter for any mentions
-    public_tweets = api.search(BOT_STR, result_type="recent", since_id=recent_analyzed_id)
+    public_tweets = api.search(cfg.BOT_STR, result_type="recent", since_id=recent_analyzed_id)
 
     # If there are no more tweets to  process then go to sleep
     if not public_tweets["statuses"]:
