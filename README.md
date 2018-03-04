@@ -26,5 +26,5 @@ The following APIs were used for this application:
 ![@NASAdata.png](@NASAdata.png)
 
 ## Twitter Screen Shots
-![Twitter_Brooklyn_BBQ.png](@Twitter_Brooklyn_BBQ.png)
-![Twitter_Economic_Times.png](@Twitter_Economic_Times.png)
+![Twitter_Brooklyn_BBQ.png](Twitter_Brooklyn_BBQ.png)
+![Twitter_Economic_Times.png](Twitter_Economic_Times.png)
