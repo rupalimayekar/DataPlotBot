@@ -5,7 +5,7 @@ For example, when a user tweets, __"@DataPlotBot Analyze: @CNN,"__ it will trigg
 
 ## Bot Considerations:
 
-* The bot scans your account every __five minutes__ for mentions.
+* The bot scans its twitter account every __five minutes__ for mentions.
 * The bot pulls __500__ most recent tweets to analyze for each incoming request.
 * The bot prevents abuse by analyzing __only__ Twitter accounts that have not previously been analyzed.
 * The bot mentions the Twitter account name of the requesting user in its analysis twitter post.
