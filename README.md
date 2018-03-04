@@ -11,6 +11,12 @@ For example, when a user tweets, __"@DataPlotBot Analyze: @CNN,"__ it will trigg
 * The bot mentions the Twitter account name of the requesting user in its analysis twitter post.
 * The bot performs analysis on all twitter ids in the mention
 
+## Setup and Configuration notes
+You may use the application to run your own Twitter Bot. The following easy configuration steps will be needed
+* The API Keys and Token information is saved in a config.py file which is not checked into GitHub. To use the application you much first 
+add a config.py file in the same folder as the DataPlotBot.py. The keys generated for your Twitter App should be saved in this config.py file as indicated in the SampleConfig.py file here.
+* The Twitter ID for your Bot should be specified in the config.py file as well. This is also given in the SampleConfig.py file
+
 ## APIs used
 
 The following APIs were used for this application:
