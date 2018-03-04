@@ -99,7 +99,7 @@ def plot_sentiment_analysis(tweet_df, twitter_user):
     # Create plot
     fig = plt.figure(figsize=(12,8))
     ax = fig.add_subplot(111,facecolor='lightgrey')
-    plt.plot(tweet_df['Tweets Ago'], tweet_df['Compound'], '-o', color='m')
+    plt.plot(tweet_df['Tweets Ago'], tweet_df['Compound'], '-o', color='m', label=twitter_user)
     
     # Incorporate the other graph properties
     plt.grid(color='black', alpha = 0.2)
@@ -107,6 +107,7 @@ def plot_sentiment_analysis(tweet_df, twitter_user):
     plt.xlabel("Tweets Ago", size=15)
     plt.ylabel("Tweet Polarity", size=15)
     plt.title("Sentiment Analysis ({} - {}) for {}".format(start_date, end_date, twitter_user), size=15)
+    plt.legend(title="Tweets",loc='best')
 
     # Save the plot image as a png file for posting on twitter
     image_file_name = twitter_user+".png"
