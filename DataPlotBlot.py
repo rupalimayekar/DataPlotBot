@@ -1,8 +1,9 @@
 ################################################################################################
 # This is the main script for the Data PlotBot Application. This PlotBot scans its Twitter account
 # for mentions. For any tweet with its mention as "@DataPlotBot Analyze: <TwitterID>", it  pulls
-# 500 most recent tweets for the Twitter ID mentioned and performs a Sentiment Analysis on them.
-# It then plots a scatter plot showing the analysis.
+# 500 most recent tweets for the Twitter ID mentioned and performs Vader Sentiment Analysis on them.
+# It then saves a scatter plot image showing the analysis and posts it with a tweet on the 
+# twitter account of the Data PlotBot.
 ################################################################################################
 
 # Dependencies
@@ -12,6 +13,8 @@ import time
 import config as cfg
 import pandas as pd
 import matplotlib.pyplot as plt
+from datetime import datetime
+
 
 # Import and Initialize Sentiment Analyzer
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -25,11 +28,8 @@ auth = tweepy.OAuthHandler(cfg.plotbot_consumer_key, cfg.plotbot_consumer_secret
 auth.set_access_token(cfg.plotbot_access_token, cfg.plotbot_access_token_secret)
 api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 
-# Constants used in the script mainly for readability
-CAN_PERFORM_SEARCH = True
-
 # If you wish to use this script for your bot, then you may change this to specify your twitter screen name
-SEARCH_STR = "@DataPlotBot Analyze:"    
+BOT_STR = "@DataPlotBot Analyze:"    
 
 # The recent most tweet id that was analyzed is stored here to prevent any further analysis for
 # tweets occuring before this one
@@ -40,19 +40,14 @@ recent_analyzed_id = ""
 analyzed_ids = []
 
 ################################################################################################
-# Function to perform the sentiment analysis
+# This function takes a twitter id, performs vader sentiment analysis of the last 500 tweets 
+# and creates a DataFrame that it return
 ################################################################################################
 def perform_sentiment_analysis(twitter_id):
     print("perform_sentiment_analysis started")
     
-    # Add List to hold sentiment
-    compounds = []
-    positives = []
-    negatives = []
-    neutrals = []
-    tweets_ago = []
-    texts = []
-    tweet_dates = []
+    # List to hold sentiment analysis data
+    sentiments = []
 
     # Initialize the tweet counter. This is used for the x-axis of the plots
     tweet_ago_count = 1
@@ -72,48 +67,48 @@ def perform_sentiment_analysis(twitter_id):
             neu = analyzer.polarity_scores(tweet_text)["neu"]
             neg = analyzer.polarity_scores(tweet_text)["neg"]
 
-            #  Add each value to the appropriate array
-            compounds.append(comp)
-            positives.append(pos)
-            negatives.append(neg)
-            neutrals.append(neu)
-            tweets_ago.append(tweet_ago_count)
-            texts.append(tweet_text)
+                    # Add sentiments for each tweet into an array
+            sentiments.append({"Tweets Ago": tweet_ago_count,
+                            "Date": tweet["created_at"], 
+                            "Tweet Text": tweet_text,
+                            "Compound": comp,
+                            "Positive": pos,
+                            "Negative": neg,
+                            "Neutral": neu})
 
             # Increment counter for the next tweet
             tweet_ago_count += 1
     
-    # Logging
-    print(len(compounds))
-    
     # Create the Data Frame for the plots
-    analysis_df = pd.DataFrame({"Tweets Ago": tweets_ago,
-                            "Tweet Text": texts,
-                            "Compound": compounds,
-                            "Positive": positives,
-                            "Negative": negatives,
-                            "Neutral": neutrals})
+    analysis_df = pd.DataFrame.from_dict(sentiments)
 
     return analysis_df
   
 
 ################################################################################################
-# Function to plot the sentiment analysis
+# Function to plot the sentiment analysis. It takes the data frame and twitter id and plots a 
+# scatter plot and saves it as a png file with the name as the twitter id
 ################################################################################################
 def plot_sentiment_analysis(tweet_df, twitter_user):
-    
+    start_date = datetime.strptime(tweet_df.iloc[0]["Date"], "%a %b %d %H:%M:%S %z %Y")
+    end_date = datetime.strptime(tweet_df.iloc[len(tweet_df['Compound'])-1]["Date"], "%a %b %d %H:%M:%S %z %Y")
+
+    start_date = start_date.strftime("%x")
+    end_date = end_date.strftime("%x")
+
     # Create plot
-    fig = plt.figure(figsize=(12,6))
-    plt.plot(tweet_df['Tweets Ago'], tweet_df['Compound'], '-o')
+    fig = plt.figure(figsize=(12,8))
+    ax = fig.add_subplot(111,facecolor='lightgrey')
+    plt.plot(tweet_df['Tweets Ago'], tweet_df['Compound'], '-o', color='m')
     
     # Incorporate the other graph properties
-    plt.xlabel("Tweets Ago")
-    plt.ylabel("Tweet Polarity")
-    plt.title("Sentiment Analysis for " + twitter_user)
-    plt.axhline(color='black', linewidth='0.5')
-    
-    #plt.show()
-    # Save the plot image for posting on twitter
+    plt.grid(color='black', alpha = 0.2)
+    plt.xlim(tweet_df["Tweets Ago"].max()+5,-5)
+    plt.xlabel("Tweets Ago", size=15)
+    plt.ylabel("Tweet Polarity", size=15)
+    plt.title("Sentiment Analysis ({} - {}) for {}".format(start_date, end_date, twitter_user), size=15)
+
+    # Save the plot image as a png file for posting on twitter
     image_file_name = twitter_user+".png"
     plt.savefig(image_file_name)
 
@@ -131,7 +126,7 @@ def post_tweet(target, user, filename):
     api.update_with_media(filename, status_text)
 
 ################################################################################################
-# This function takes a tweet, extracts the text, and the twitter id to analyze.
+# This function takes a tweet, extracts the text, and the twitter ids to analyze.
 # Once it has a valid id, it gets calls other functions to get the data and then analyze it
 ################################################################################################
 def process_tweet(tweet) :
@@ -147,10 +142,9 @@ def process_tweet(tweet) :
     print("We have {} tweets to analyze from {}".format(num_to_analyze, user_str) )
     
     for x in range(1, len(user_mentions)):
-
-        #target_str = str.strip(text.split(':')[1])
         target_str = "@" + user_mentions[x]["screen_name"]
 
+        # Only analyze if not previously analyzed
         if target_str not in analyzed_ids:
 
             # Logging
@@ -165,27 +159,24 @@ def process_tweet(tweet) :
             post_tweet(target_str, user_str, image_filename)
 
         else:
-            # Logging as we do not analyze repeats
+            # Logging as we do not analyze repeats. 
             print('"{}" has been analyzed before. Skipping it.'.format(target_str))
-
+            
 ################################################################################################
-# MAIN
+# This is the main body of the script. It runs an infinite loop that scans twitter every
+# 5 mins to look for mentions for Sentiment Analysis. It then processes the requests.
 ################################################################################################
-while CAN_PERFORM_SEARCH :
-    print("starting our search : " + SEARCH_STR)
-    print("Max id = " + recent_analyzed_id)
-
+while True :
+    print("starting our search after the last analyzed id: " + recent_analyzed_id)
+    
     # Search Twitter for any mentions
-    public_tweets = api.search(SEARCH_STR, result_type="recent", since_id=recent_analyzed_id)
-
-    #print(json.dumps(public_tweets, indent=3, sort_keys=True))
+    public_tweets = api.search(BOT_STR, result_type="recent", since_id=recent_analyzed_id)
 
     # If there are no more tweets to  process then go to sleep
     if not public_tweets["statuses"]:
         print("There are no tasks to analyze....seeya after 5 mins")
         # sleep for 5 minutes
-        time.sleep(10)
-        print("Its been a long 5 mins nap....Lets see what we have to analyze")
+        time.sleep(300)
     else:
         num = len(public_tweets["statuses"])
         print("Number of mentions found in 5 mins = " + str(num))
