@@ -27,10 +27,10 @@ The following APIs were used for this application:
 * __vaderSentiment__: This api was used to generate the sentiment analysis for the twitter texts
 
 
-## Sample Analysis
+## Analysis Results
 ![@elonmusk.png](@elonmusk.png)
 ![@NASAdata.png](@NASAdata.png)
 
-## Twitter Screen Shots
+## Twitter Screen Shots from the Bot's feed
 ![Twitter_Brooklyn_BBQ.png](Twitter_Brooklyn_BBQ.png)
 ![Twitter_Economic_Times.png](Twitter_Economic_Times.png)
