@@ -7,6 +7,7 @@
 ################################################################################################
 
 # Dependencies
+import os
 import tweepy
 import json
 import time
@@ -35,6 +36,11 @@ recent_analyzed_id = ""
 # The list of analyzed twitter ids is stored here to check for duplicates so that we do not
 # analyze repeats
 analyzed_ids = []
+
+# This is the log msg that is logged into a log file. ALong with this msg, the id of recent most
+# Analyzed mention is logged so that we start searching for mentions after this id. This will ensure
+# that we do not repeat analysis
+LOG_MSG_STR = "Most Recent Analyzed Tweet:"
 
 ################################################################################################
 # This function takes a twitter id, performs vader sentiment analysis of the last 500 tweets 
@@ -165,7 +171,16 @@ def process_tweet(tweet) :
 # 5 mins to look for mentions for Sentiment Analysis. It then processes the requests.
 ################################################################################################
 while True :
-    print("starting our search after the last analyzed id: " + recent_analyzed_id)
+    
+    # We read the last mention that was looked up and analyzed as stored in our log file
+    # Our log file has one line that indicates the recent tweet that was processed
+    # We will only process mentions after this tweet
+    with open("DataPlotBot.log", mode='r') as logFile:
+        log_msg = logFile.readline()
+        recent_analyzed_id = log_msg.split(":")[1]
+    
+    # Logging
+    print("starting our search after the most recent analyzed id: " + recent_analyzed_id)
     
     # Search Twitter for any mentions
     public_tweets = api.search(cfg.BOT_STR, result_type="recent", since_id=recent_analyzed_id)
@@ -179,7 +194,15 @@ while True :
         num = len(public_tweets["statuses"])
         print("Number of mentions found in 5 mins = " + str(num))
         recent_analyzed_id = public_tweets["statuses"][0]["id_str"]
-        
+
+        msg = LOG_MSG_STR + recent_analyzed_id 
+
+        # We log this recent most id into the log file so that we do not search for mentions
+        # before this id
+        with open("DataPlotBot.log", mode='w') as logFile:
+            print("logging in file")
+            logFile.write(msg)
+    
         # Loop through all the tweets 
         for pub_tweet in public_tweets["statuses"]:
             process_tweet(pub_tweet)    
