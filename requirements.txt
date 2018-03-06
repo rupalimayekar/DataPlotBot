@@ -2,4 +2,3 @@ tweepy==3.5.0
 pandas==0.20.3
 matplotlib==2.1.2
 vaderSentiment==2.5
-json==2.0.9
