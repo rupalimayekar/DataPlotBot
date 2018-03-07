@@ -13,9 +13,8 @@ For example, when a user tweets, __"@DataPlotBot Analyze: @CNN,"__ it will trigg
 
 ## Setup and Configuration notes
 You may use the application to run your own Twitter Bot. The following easy configuration steps will be needed
-* The API Keys and Token information is saved in a config.py file which is not checked into GitHub. To use the application you much first 
-add a config.py file in the same folder as the DataPlotBot.py. The keys generated for your Twitter App should be saved in this config.py file as indicated in the SampleConfig.py file here.
-* The Twitter ID for your Bot should be specified in the config.py file as well. This is also given in the SampleConfig.py file
+* The API Keys and Token information is saved in a config.yaml file which is not checked into GitHub. To use the application you much first add a config.yaml file in the same folder as the DataPlotBot.py. The keys generated for your Twitter App should be saved in this config.yaml file as indicated in the SampleConfig.yaml file here.
+* The Twitter ID for your Bot should be specified in the config.yaml file as well. This is also given in the SampleConfig.yaml file
 
 ## APIs used
 

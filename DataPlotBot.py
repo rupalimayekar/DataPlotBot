@@ -8,10 +8,10 @@
 
 # Dependencies
 import os
+import yaml
 import tweepy
 import json
 import time
-import config as cfg
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -21,12 +21,16 @@ from datetime import datetime
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 analyzer = SentimentIntensityAnalyzer()
 
+# Load the config.yaml file to get the api keys and other parameters
+with open("./config.yaml") as y:
+    cfg = yaml.load(y)
+
 # Setup Tweepy API Authentication. The keys and tokens are specified in the config.py that
 # is imported above. This is done to secure the keys. The config.py will NOT be a part of the
 # files pushed on GitHub for this application. Anyone who wishes to run this script should do so
 # with thier own keys and tokens
-auth = tweepy.OAuthHandler(cfg.plotbot_consumer_key, cfg.plotbot_consumer_secret)
-auth.set_access_token(cfg.plotbot_access_token, cfg.plotbot_access_token_secret)
+auth = tweepy.OAuthHandler(cfg["keys"]["plotbot_consumer_key"], cfg["keys"]["plotbot_consumer_secret"])
+auth.set_access_token(cfg["keys"]["plotbot_access_token"], cfg["keys"]["plotbot_access_token_secret"])
 api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 
 # The recent most tweet id that was analyzed is stored here to prevent any further analysis for
@@ -183,7 +187,7 @@ while True :
     print("starting our search after the most recent analyzed id: " + recent_analyzed_id)
     
     # Search Twitter for any mentions
-    public_tweets = api.search(cfg.BOT_STR, result_type="recent", since_id=recent_analyzed_id)
+    public_tweets = api.search(cfg["constants"]["BOT_STR"], result_type="recent", since_id=recent_analyzed_id)
 
     # If there are no more tweets to  process then go to sleep
     if not public_tweets["statuses"]:
